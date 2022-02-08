@@ -3,6 +3,8 @@ ENVIRONMENT:
 SIMULATOR:
   AGENT_0:
     SENSORS: ['RGB_SENSOR']
+    HEIGHT: 0.3  #Lower height so the agent can see obstacles better
+    RADIUS: 0.18
   HABITAT_SIM_V0:
     GPU_DEVICE_ID: 0
     ALLOW_SLIDING: False
@@ -24,7 +26,7 @@ TASK:
 
   MEASUREMENTS: ['DISTANCE_TO_GOAL', 'SUCCESS', 'SPL']
   SUCCESS:
-    SUCCESS_DISTANCE: 0.2
+    SUCCESS_DISTANCE: 0.36 # 2x the radius
 
 DATASET:
   TYPE: PointNav-v1
