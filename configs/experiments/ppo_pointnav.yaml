@@ -21,6 +21,7 @@ CHECKPOINT_FOLDER: "data/experiments/checkpoints/ppo_pointnav"
 TOTAL_NUM_STEPS: 75e6
 NUM_UPDATES: -1
 LOG_INTERVAL: 25
+LOG_FILE: "data/experiments/checkpoints/ppo_pointnav/train.log"
 NUM_CHECKPOINTS: 10
 # Force PyTorch to be single threaded as
 # this improves performance considerably

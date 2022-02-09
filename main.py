@@ -27,7 +27,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--run-type",
-        choices=["train", "eval"],
+        choices=["train", "eval", "both"],
         required=True,
         help="run type of the experiment (train or eval)",
     )
@@ -56,4 +56,7 @@ if __name__ == "__main__":
     if args.run_type == "train":
         trainer.train()
     elif args.run_type == "eval":
+        trainer.eval()
+    elif args.run_type == "both":
+        trainer.train()
         trainer.eval()
