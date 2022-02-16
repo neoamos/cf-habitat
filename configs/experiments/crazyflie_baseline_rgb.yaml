@@ -10,19 +10,19 @@ TORCH_GPU_ID: 0
 VIDEO_OPTION: ["tensorboard"]
 # Can be uncommented to generate videos.
 # VIDEO_OPTION: ["disk", "tensorboard"]
-TENSORBOARD_DIR: "data/experiments/tb/crazyflie_baseline_rgb"
+TENSORBOARD_DIR: "data/experiments/tb/crazyflie_baseline_rgb2"
 VIDEO_DIR: "video_dir"
 # Evaluate on all episodes
 TEST_EPISODE_COUNT: 20
-EVAL_CKPT_PATH_DIR: "data/experiments/checkpoints/crazyflie_baseline_rgb"
+EVAL_CKPT_PATH_DIR: "data/experiments/checkpoints/crazyflie_baseline_rgb2"
 NUM_ENVIRONMENTS: 4
 SENSORS: ["RGB_SENSOR"]
-CHECKPOINT_FOLDER: "data/experiments/checkpoints/crazyflie_baseline_rgb"
-TOTAL_NUM_STEPS: 5.5e6
+CHECKPOINT_FOLDER: "data/experiments/checkpoints/crazyflie_baseline_rgb2"
+TOTAL_NUM_STEPS: 30e6
 NUM_UPDATES: -1
 LOG_INTERVAL: 25
-LOG_FILE: "data/experiments/checkpoints/crazyflie_baseline_rgb/train.log"
-NUM_CHECKPOINTS: 10
+LOG_FILE: "data/experiments/checkpoints/crazyflie_baseline_rgb2/train.log"
+NUM_CHECKPOINTS: 100
 # Force PyTorch to be single threaded as
 # this improves performance considerably
 FORCE_TORCH_SINGLE_THREADED: True
