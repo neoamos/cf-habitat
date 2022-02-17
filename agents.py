@@ -5,6 +5,10 @@ import gym
 from gym import spaces
 from PIL import Image
 
+from habitat_baselines.utils.common import (
+    batch_obs,
+)
+
 from habitat_baselines.common.baseline_registry import baseline_registry
 from habitat_baselines.config.default import get_config
 from habitat_baselines.common.obs_transformers import (
@@ -56,6 +60,7 @@ class PointGoalAgent:
     pretrained_state = torch.load(
       pretrained_weights, map_location="cpu"
     )
+    self.actor_critic.eval()
 
     self.actor_critic.load_state_dict(
       {
@@ -80,38 +85,48 @@ class PointGoalAgent:
       dtype=self.action_type,
     )
     self.not_done_masks = torch.tensor(
-        [True],
+        [False],
         dtype=torch.bool,
         device="cpu",
     )
 
-  def act(self, image, position, yaw, target_position):
-    point_goal = compute_pointgoal_cf(position, yaw, target_position)
+  def act(self, image, position, yaw, target_position, point_goal=None):
+    if point_goal is None:
+      point_goal = compute_pointgoal_cf(position, yaw, target_position)
+      point_goal = torch.from_numpy(np.expand_dims(point_goal, axis=0))
+      image = torch.from_numpy(np.expand_dims(image, axis=0))
 
     observations = {
-      "pointgoal_with_gps_compass": 
-        torch.from_numpy(np.expand_dims(point_goal, axis=0)),
-      "rgb": 
-        torch.from_numpy(np.expand_dims(image, axis=0))
+      "pointgoal_with_gps_compass": point_goal,
+      "rgb": image
     }
-    
-    (
-      values,
-      actions,
-      actions_log_probs,
-      hidden_state
-    ) = self.actor_critic.act(
-      observations,
-      self.hidden_state,
-      self.prev_action,
-      self.not_done_masks,
-      deterministic=True
-    )
 
-    self.hidden_state = hidden_state
-    self.prev_action = actions
+    batch = batch_obs([observations], device=self.device)
+    
+    with torch.no_grad():
+      (
+        values,
+        actions,
+        actions_log_probs,
+        hidden_state
+      ) = self.actor_critic.act(
+        batch,
+        self.hidden_state,
+        self.prev_action,
+        self.not_done_masks,
+        deterministic=False
+      )
+
+      self.hidden_state = hidden_state
+      self.prev_action.copy_(actions)
 
     action = self.possible_actions[actions.item()]   
+
+    self.not_done_masks = torch.tensor(
+        [action!="STOP"],
+        dtype=torch.bool,
+        device="cpu",
+    )
     return action
 
 def compute_pointgoal_cf(
