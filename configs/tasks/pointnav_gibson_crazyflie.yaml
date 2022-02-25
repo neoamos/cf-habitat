@@ -4,7 +4,7 @@ SIMULATOR:
   AGENT_0:
     SENSORS: ['RGB_SENSOR']
     HEIGHT: 0.5  #Lower height so the agent can see obstacles better
-    RADIUS: 0.1
+    RADIUS: 0.18
   HABITAT_SIM_V0:
     GPU_DEVICE_ID: 0
     ALLOW_SLIDING: False
@@ -18,7 +18,7 @@ SIMULATOR:
     POSITION: [0, 0.5, 0]
 TASK:
   TYPE: Nav-v0
-  SUCCESS_DISTANCE: 0.4
+  SUCCESS_DISTANCE: 0.36
 
   SENSORS: ['POINTGOAL_WITH_GPS_COMPASS_SENSOR']
   POINTGOAL_WITH_GPS_COMPASS_SENSOR:
@@ -28,9 +28,9 @@ TASK:
 
   MEASUREMENTS: ['DISTANCE_TO_GOAL', 'SUCCESS', 'SPL']
   SUCCESS:
-    SUCCESS_DISTANCE: 0.4
+    SUCCESS_DISTANCE: 0.36
 
 DATASET:
   TYPE: PointNav-v1
   SPLIT: train
-  DATA_PATH: data/datasets/pointnav/gibson/v1/{split}/{split}.json.gz
+  DATA_PATH: data/datasets/pointnav/gibson/v2/{split}/{split}.json.gz
