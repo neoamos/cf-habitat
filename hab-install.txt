@@ -1,0 +1,6 @@
+conda create -n hab python=3.6
+conda activate hab
+python -m pip install -r requirements.txt
+python -m pip install cython pkgconfig h5py
+python setup.py develop --all
+conda install habitat-sim withbullet headless -c conda-forge -c aihabitat
