@@ -51,11 +51,12 @@ class ControlThread(threading.Thread):
     self.BUTTON_X = 2
     self.BUTTON_Y = 3
     self.BUTTON_START = 7
+    self.BUTTON_SELECT = 6
 
     self.is_deck_attached = False
     self.mc = None # Motion commander
 
-    self.goal = np.array([1,0,0])
+    self.goal = np.array([0,0,0])
     self.position_estimate = np.zeros((3))
     self.orientation_estimate = np.zeros((3))
     self.quaternions = quaternion.from_euler_angles(
@@ -80,7 +81,7 @@ class ControlThread(threading.Thread):
 
     self.pointgoal_agent = PointGoalAgent(
       "configs/experiments/crazyflie_baseline_rgb.yaml",
-      "data/ddppo-models/gibson-rgb-best.pth"
+      "data/pretrained-models/grayscale_5m_95.pth"
     )
 
     self.ui = Gtk.Builder()
@@ -118,6 +119,7 @@ class ControlThread(threading.Thread):
     yaw_rate = 0.0
     control_mode = "joystick"
     next_action_after = time.time()
+    action_count = 0
 
     axes = [0, 0, 0, 0, 0, 0]
     while self.running:
@@ -127,7 +129,6 @@ class ControlThread(threading.Thread):
       
       for event in pygame.event.get():
         if event.type == pygame.JOYBUTTONDOWN:
-
           #Change control mode
           if event.button == self.BUTTON_RB:
             control_mode = "pointgoal"
@@ -143,6 +144,10 @@ class ControlThread(threading.Thread):
               print("Taking off")
               self.mc.take_off()
               flying = True
+
+          #Reset kalman filter
+          elif event.button == self.BUTTON_SELECT:
+            self.scf.cf.param.set_value('kalman.resetEstimation', '1')
 
         elif event.type == pygame.JOYBUTTONUP:
           if event.button == self.BUTTON_RB:
@@ -196,21 +201,29 @@ class ControlThread(threading.Thread):
               action = self.pointgoal_agent.act(
                 image, self.position_estimate, yaw, self.goal)
 
-              self.set_label("control_rl_action", action)
+              action_count += 1
+              self.set_label("control_rl_action", "{} ({})".format(action, action_count))
 
               if action == "MOVE_FORWARD":
-                self.mc.start_linear_motion(0.25, 0.0, 0.0)
-                next_action_after = time.time() + 1.0
+                if self.range_estimate[0] > 0.25:
+                  self.mc.start_linear_motion(0.25, 0.0, 0.0)
+                  next_action_after = time.time() + 1.0
+                else:
+                  self.mc.stop()
+                  next_action_after = time.time() + 0.5
               elif action == "TURN_LEFT":
-                self.mc.start_linear_motion(0.0, 0.0, 0.0, rate_yaw=-40.0)
-                next_action_after = time.time() + 0.25
+                self.mc.start_linear_motion(0.0, 0.0, 0.0, rate_yaw=-20.0)
+                next_action_after = time.time() + 0.5
               elif action == "TURN_RIGHT":
-                self.mc.start_linear_motion(0.0, 0.0, 0.0, rate_yaw=40.0)
-                next_action_after = time.time() + 0.25
+                self.mc.start_linear_motion(0.0, 0.0, 0.0, rate_yaw=20.0)
+                next_action_after = time.time() + 0.5
               elif action == "STOP":
                 self.mc.stop()
                 return
             else:
+              self.mc.stop()
+          else:
+            if action == "MOVE_FORWARD" and self.range_estimate[0] < 0.25:
               self.mc.stop()
 
   def update_ui(self):
@@ -300,6 +313,9 @@ class ControlThread(threading.Thread):
     self.battery_volts = data["pm.vbat"]
 
   def on_image(self, img, imgdata):
+    if self.last_image_at != None:
+      fps = 1 / (time.time() - self.last_image_at)
+      self.set_label("camera_status", "{:.1f} fps / {:.1f} kb".format(fps, len(imgdata)/1000))
     self.last_image_at = time.time()
     self.last_image = img
 
@@ -328,7 +344,7 @@ class ControlThread(threading.Thread):
 
     with SyncCrazyflie(self.URI, cf=Crazyflie(rw_cache='./cache')) as scf:
       scf.cf.param.add_update_callback(group='deck', name='bcFlow2', cb=self.param_deck_flow)
-
+      self.scf = scf
       time.sleep(1)
 
       pos_logger = LogConfig(name='Position', period_in_ms=100)

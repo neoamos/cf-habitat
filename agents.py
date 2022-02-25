@@ -93,9 +93,9 @@ class PointGoalAgent:
   def act(self, image, position, yaw, target_position, point_goal=None):
     if point_goal is None:
       point_goal = compute_pointgoal_cf(position, yaw, target_position)
-      point_goal = torch.from_numpy(np.expand_dims(point_goal, axis=0))
-      image = torch.from_numpy(np.expand_dims(image, axis=0))
 
+
+    print(point_goal)
     observations = {
       "pointgoal_with_gps_compass": point_goal,
       "rgb": image
@@ -134,6 +134,7 @@ def compute_pointgoal_cf(
 ):
   rotation = quaternion.from_euler_angles(np.pi*((-yaw)/180), 0, 0)
   direction_vector = goal_position - source_position
+  direction_vector[1] = -direction_vector[1]
   direction_vector_agent = quaternion_rotate_vector(
       rotation.inverse(), direction_vector
   )
@@ -200,24 +201,24 @@ def rotation_cf_to_hab(rotation):
 if __name__ == "__main__":
   agent = PointGoalAgent(
     "configs/experiments/crazyflie_baseline_rgb.yaml",
-    "ckpt.95.pth"
+    "data/pretrained-models/ckpt.95.pth"
     )
 
-  image = Image.open('out.jpg').resize((256,256))
+  image = Image.open('data/images/out.jpg').resize((256,256))
   image = np.array(image)
   image = np.stack((image, image, image), axis=-1)
   image = image[:, :, 0:3]
   # image = np.zeros((256,256,3))
   position = np.array([0, 0, 0])
   yaw = 0
-  target = np.array([1, 0, 0])
+  target = np.array([0, 1, 0])
 
-  for i in range(10):
-    action = agent.act(image, position, yaw, target)
-    print(action)
 
-  yaw = 2.5
-  position = np.array([-0.03, -0.05, 0.33])
-  target = np.array([1, 0, 0])
+  action = agent.act(image, position, yaw, target)
+  print(action)
+
+  yaw = 0
+  position = np.array([0, 0, 0])
+  target = np.array([-1, -1, 0])
   distance, rotation = compute_pointgoal_cf(position, yaw, target)
   print(distance, rotation*180/np.pi)
