@@ -27,8 +27,9 @@ from habitat_sim import geo
 
 from habitat.core.spaces import ActionSpace, EmptySpace
 
+
 class PointGoalAgent:
-  def __init__(self, config_file, pretrained_weights, device="cpu"):
+  def __init__(self, config_file, pretrained_weights, device="cpu", transform_obs=False):
     self.device = device
     self.config = get_config(config_file)
     self.task_config = self.config.TASK_CONFIG
@@ -46,11 +47,13 @@ class PointGoalAgent:
     )
     self.action_shape = (1,)
     self.action_type = torch.long
-    self.obs_transforms = get_active_obs_transforms(self.config)
 
-    self.observation_space = apply_obs_transforms_obs_space(
-      self.observation_space, self.obs_transforms
-    )
+    self.transform_obs = transform_obs
+    if self.transform_obs:
+      self.obs_transforms = get_active_obs_transforms(self.config)
+      self.observation_space = apply_obs_transforms_obs_space(
+        self.observation_space, self.obs_transforms
+      )
 
     policy = baseline_registry.get_policy(self.config.RL.POLICY.name)
     self.actor_critic = policy.from_config(
@@ -200,8 +203,8 @@ def rotation_cf_to_hab(rotation):
 
 if __name__ == "__main__":
   agent = PointGoalAgent(
-    "configs/experiments/crazyflie_baseline_rgb.yaml",
-    "data/pretrained-models/ckpt.95.pth"
+    "configs/experiments/ddppo_pointnav_grayscale.yaml",
+    "data/pretrained-models/ddppo-grayscale-99.pth"
     )
 
   image = Image.open('data/images/out.jpg').resize((256,256))
