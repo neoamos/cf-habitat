@@ -11,7 +11,7 @@
 #SBATCH -c 128                 # 24 CPU cores per process 
 #                               can be referenced as $SLURM_CPUS_PER_TASK​ in the "payload" part
 #SBATCH --mem-per-cpu=7200    # Main memory in MByte per CPU core
-#SBATCH -t 01:00:00           # in hours:minutes, or '#SBATCH -t 10' - just minutes
+#SBATCH -t 04:00:00           # in hours:minutes, or '#SBATCH -t 10' - just minutes
 
 # GPU specification
 #SBATCH -C dgx
@@ -38,8 +38,8 @@ python -u -m torch.distributed.launch \
     --use_env \
     --nproc_per_node 8 \
     main.py \
-    --exp-config configs/experiments/ddppo_pointnav.yaml \
-    --run-type eval
+    --exp-config configs/experiments/ddppo_pointnav_rgbd.yaml \
+    --run-type train
 
 # while true
 # do
