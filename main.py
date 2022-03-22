@@ -11,6 +11,10 @@ from matplotlib import pyplot as plt
 
 from PIL import Image
 
+import policy
+import observation_transformers
+import environment
+
 import habitat
 from habitat.core.logging import logger
 from habitat.core.registry import registry
@@ -19,11 +23,8 @@ from habitat.tasks.nav.nav import NavigationTask
 from habitat_baselines.common.baseline_registry import baseline_registry
 from habitat_baselines.config.default import get_config as get_baselines_config
 
-import observation_transformers
-
 def makedir(directory):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    os.makedirs(directory, exist_ok=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -40,9 +41,16 @@ if __name__ == "__main__":
         help="path to config yaml containing info about experiment",
     )
 
+    parser.add_argument(
+        "opts",
+        default=None,
+        nargs=argparse.REMAINDER,
+        help="Modify config options from command line",
+    )
+
     args = parser.parse_args()
 
-    config = get_baselines_config(args.exp_config)
+    config = get_baselines_config(args.exp_config, args.opts)
     random.seed(config.TASK_CONFIG.SEED)
     np.random.seed(config.TASK_CONFIG.SEED)
     torch.manual_seed(config.TASK_CONFIG.SEED)

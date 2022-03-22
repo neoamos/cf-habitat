@@ -1,0 +1,12 @@
+{
+  "room_boundaries": [0, 0, 0, 0],
+  "box_obstacles": [
+    [0, 0, 0.4, 0.4]
+  ],
+  "episodes": [
+    {
+      "start": [0, 0],
+      "end": [1, 1]
+    }
+  ]
+}
