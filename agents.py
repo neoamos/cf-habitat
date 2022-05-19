@@ -5,6 +5,9 @@ import gym
 from gym import spaces
 from PIL import Image
 
+import policy
+import environment
+
 from habitat_baselines.utils.common import (
     batch_obs,
 )
@@ -29,7 +32,7 @@ from habitat.core.spaces import ActionSpace, EmptySpace
 
 
 class PointGoalAgent:
-  def __init__(self, config_file, pretrained_weights, device="cpu", transform_obs=False):
+  def __init__(self, config_file, device="cpu", transform_obs=False, weights=None):
     self.device = device
     self.config = get_config(config_file)
     self.task_config = self.config.TASK_CONFIG
@@ -60,8 +63,11 @@ class PointGoalAgent:
       self.config, self.observation_space, self.action_space
     )
     
+    load_weights= self.config.EVAL_CKPT_PATH_DIR
+    if weights:
+      load_weights = weights
     pretrained_state = torch.load(
-      pretrained_weights, map_location="cpu"
+      load_weights, map_location="cpu"
     )
     self.actor_critic.eval()
 
@@ -182,29 +188,10 @@ def compute_pointgoal(
         else:
             return direction_vector_agent
 
-def position_cf_to_hab(position):
-  rotation_matrix = np.array([
-    [0, 1, 0],
-    [0, 0, 1],
-    [1, 0, 0]
-  ])
-  quat = quaternion.from_rotation_matrix(rotation_matrix)
-  return quaternion.rotate_vectors(quat, position)
-
-def rotation_cf_to_hab(rotation):
-  rotation_matrix = np.array([
-    [0, 1, 0],
-    [0, 0, 1],
-    [1, 0, 0]
-  ])
-  quat = quaternion.from_rotation_matrix(rotation_matrix)
-  return quat * rotation
-
 
 if __name__ == "__main__":
   agent = PointGoalAgent(
-    "configs/experiments/ddppo_pointnav_grayscale.yaml",
-    "data/pretrained-models/ddppo-grayscale-99.pth"
+      "configs/experiments/ddppo_pointnav_gibson0plus_resnet50.yaml"
     )
 
   image = Image.open('data/images/out.jpg').resize((256,256))
