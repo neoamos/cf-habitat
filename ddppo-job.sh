@@ -11,11 +11,11 @@
 #SBATCH -c 128                 # 24 CPU cores per process 
 #                               can be referenced as $SLURM_CPUS_PER_TASK​ in the "payload" part
 #SBATCH --mem-per-cpu=7200    # Main memory in MByte per CPU core
-#SBATCH -t 00:50:00           # in hours:minutes, or '#SBATCH -t 10' - just minutes
+#SBATCH -t 17:00:00           # in hours:minutes, or '#SBATCH -t 10' - just minutes
 
 # GPU specification
 #SBATCH -C dgx
-#SBATCH --gres=gpu:a100:1     # 2 GPUs of type NVidia "Volta 100"
+#SBATCH --gres=gpu:a100:8     # 2 GPUs of type NVidia "Volta 100"
 
 # -------------------------------
 # your real job commands, eg.
@@ -33,21 +33,17 @@ cd /home/an38gezy/thesis/cf-habitat
 export GLOG_minloglevel=2
 export MAGNUM_LOG=quiet
 
-set -x
-# python -u -m torch.distributed.launch \
-#     --use_env \
-#     --nproc_per_node 8 \
-#     main.py \
-#     --exp-config configs/experiments/ddppo_pointnav_gibson0plus_resnet50_collision.yaml \
-#     --run-type train
+# set -x
+python -u -m torch.distributed.launch \
+    --use_env \
+    --nproc_per_node 8 \
+    main.py \
+    --exp-config configs/experiments/ddppo_pointnav_gibson4plus_mobilenet_lstm1.yaml \
+    --run-type train
 
-python main.py \
-    --exp-config configs/experiments/ddppo_pointnav_gibson0plus_resnet50.yaml \
-    --run-type eval
-
-python main.py \
-    --exp-config configs/experiments/ddppo_pointnav_gibson4plus_resnet50.yaml \
-    --run-type eval
+# python main.py \
+#     --exp-config configs/experiments/ddppo_pointnav_gibson0plus_resnet50.yaml \
+#     --run-type eval
 
 # while true
 # do

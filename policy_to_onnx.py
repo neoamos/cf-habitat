@@ -64,12 +64,11 @@ if __name__ == "__main__":
             device="cpu",
             dtype=action_type,
         )
-        not_done_masks = None
-        # torch.tensor(
-        #     [True],
-        #     dtype=torch.bool,
-        #     device="cpu",
-        # )
+        not_done_masks = torch.tensor(
+            [True],
+            dtype=torch.bool,
+            device="cpu",
+        )
         observations = {
             "pointgoal_with_gps_compass": torch.zeros((1,2)),
             "rgb": torch.zeros((1, width, height, 3))
