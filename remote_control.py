@@ -502,7 +502,6 @@ class ControlThread(threading.Thread):
         self.recording_file.flush()
 
   def land(self):
-    self.flying = False
     if self.setpoint_mode == "position":
       if self.flying:
         self.flying = False
@@ -515,6 +514,7 @@ class ControlThread(threading.Thread):
         yaw=None)
     elif self.setpoint_mode == "velocity":
       self.mc.land()
+    self.flying = False
 
   def takeoff(self):
     self.flying = True
